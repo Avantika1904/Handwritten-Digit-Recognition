@@ -1,0 +1,30 @@
+# Node
+backend/node_modules/
+frontend/node_modules/
+
+# Environment files
+backend/.env
+frontend/.env
+
+# Uploads
+backend/uploads/*
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite build
+frontend/dist/
+
+# Logs
+*.log
+dataset/
+Model/test_images/
+Model/processed.png
