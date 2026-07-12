@@ -26,7 +26,7 @@ function Home() {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:5000/api/predictions/upload",
+        "https://handwritten-digit-recognition-vrvq.onrender.com/api/predictions/upload",
         formData
       );
 
