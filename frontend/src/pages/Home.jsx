@@ -26,7 +26,7 @@ function Home() {
       setLoading(true);
 
       const response = await axios.post(
-        "https://handwritten-digit-recognition-2-9lcn.onrender.com",
+        "https://handwritten-digit-recognition-2-9lcn.onrender.com/upload",
         formData
       );
 

@@ -13,7 +13,7 @@ function History() {
   const fetchHistory = async () => {
     try {
       const response = await axios.get(
-        "https://handwritten-digit-recognition-2-9lcn.onrender.com"
+        "https://handwritten-digit-recognition-2-9lcn.onrender.com/api/predictions"
       );
 
       setHistory(response.data);
