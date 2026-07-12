@@ -1,32 +1,43 @@
 const express = require("express");
 const multer = require("multer");
-const { PythonShell } = require("python-shell");
-const path = require("path");
-const Prediction = require("../models/Prediction");
+const axios = require("axios");
+const FormData = require("form-data");
 const fs = require("fs");
+const path = require("path");
+
+const Prediction = require("../models/Prediction");
 
 const router = express.Router();
 
-// Multer Storage
+
+// Upload folder
 const uploadDir = path.join(__dirname, "..", "uploads");
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
+
+// Multer storage
 const storage = multer.diskStorage({
+
     destination: function (req, file, cb) {
         cb(null, uploadDir);
     },
 
     filename: function (req, file, cb) {
         cb(null, Date.now() + "-" + file.originalname);
-    },
+    }
+
 });
-const upload = multer({ storage: storage });
+
+
+const upload = multer({ storage });
+
 
 // Upload & Predict
 router.post("/upload", upload.single("image"), async (req, res) => {
+
 
     if (!req.file) {
         return res.status(400).json({
@@ -34,73 +45,95 @@ router.post("/upload", upload.single("image"), async (req, res) => {
         });
     }
 
-    // Full path of uploaded image
-    const imagePath = path.join(
-        __dirname,
-        "..",
-        "uploads",
-        req.file.filename
-    );
-
-    const options = {
-        mode: "text",
-        pythonPath: "python",
-        scriptPath: path.join(__dirname, "..", "..", "Model"),
-        args: [imagePath]
-    };
 
     try {
 
-        const results = await PythonShell.run("predict.py", options);
-
-        // Example:
-        // results[0] = "Predicted Digit: 8"
-        // results[1] = "Confidence: 49.03%"
-
-        const digit = parseInt(results[0].split(":")[1].trim());
-
-        const confidence = parseFloat(
-            results[1].split(":")[1].replace("%", "").trim()
+        const imagePath = path.join(
+            uploadDir,
+            req.file.filename
         );
 
-        // Save to MongoDB
+
+        // Send image to FastAPI ML service
+        const formData = new FormData();
+
+        formData.append(
+            "file",
+            fs.createReadStream(imagePath)
+        );
+
+
+        const response = await axios.post(
+            "http://127.0.0.1:8000/predict",
+            formData,
+            {
+                headers: formData.getHeaders()
+            }
+        );
+        console.log("ML Response:", response.data);
+
+
+        const digit = response.data.digit;
+
+        const confidence = response.data.confidence;
+
+
+        // Save prediction
         const prediction = new Prediction({
+
             image: req.file.filename,
+
             digit,
+
             confidence
+
         });
+
 
         await prediction.save();
 
+
         res.json({
+
             message: "Prediction Successful",
+
             prediction
+
         });
 
-    } catch (err) {
 
-        console.error(err);
+    } catch (error) {
 
-        res.status(500).json({
-            message: "Prediction Failed",
-            error: err.message
-        });
+    console.error("FULL ERROR:");
+    console.error(error);
 
-    }
+    res.status(500).json({
+        message: "Prediction Failed",
+        error: error.message
+    });
+
+}
 
 });
 
-// Get all prediction history
+
+
+// History
 router.get("/", async (req, res) => {
 
     try {
 
-        const predictions = await Prediction.find()
-            .sort({ createdAt: -1 });
+        const predictions = await Prediction
+            .find()
+            .sort({
+                createdAt: -1
+            });
+
 
         res.json(predictions);
 
-    } catch (err) {
+
+    } catch (error) {
 
         res.status(500).json({
             message: "Error fetching predictions"
@@ -109,5 +142,6 @@ router.get("/", async (req, res) => {
     }
 
 });
+
 
 module.exports = router;
