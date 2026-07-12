@@ -7,9 +7,13 @@ from tensorflow.keras.utils import load_img, img_to_array
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-model = load_model(
-    os.path.join(BASE_DIR, "digit_model.keras")
-)
+from pathlib import Path
+import tensorflow as tf
+
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "digit_model.keras"
+
+model = tf.keras.models.load_model(MODEL_PATH)
 
 
 image_path = sys.argv[1]

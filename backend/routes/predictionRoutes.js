@@ -64,7 +64,7 @@ router.post("/upload", upload.single("image"), async (req, res) => {
 
 
         const response = await axios.post(
-            "http://127.0.0.1:8000/predict",
+            "https://handwritten-digit-recognition-1-2rn5.onrender.com/predict",
             formData,
             {
                 headers: formData.getHeaders()
