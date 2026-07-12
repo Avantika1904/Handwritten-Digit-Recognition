@@ -6,9 +6,13 @@ import io
 
 app = FastAPI()
 
-model = tf.keras.models.load_model(
-    "../Model/digit_model.keras"
-)
+from pathlib import Path
+import tensorflow as tf
+
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "digit_model.keras"
+
+model = tf.keras.models.load_model(MODEL_PATH)
 
 
 @app.get("/")
